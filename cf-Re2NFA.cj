@@ -35,22 +35,48 @@ class NFA{
         this.transitions= HashMap<Int64, HashMap<String, HashSet<Int64>>>()
     }
 
-    public func add_transitions(s_from:Int64, symbol:String, s_to:Int64){
-        //增加一个转换关系（从s_from,通过输入字母symbol，转换到状态s_to）
-        this.transitions[s_from][symbol].add(s_to)
+    public func add_transitions(trans:HashMap<Int64, HashMap<String, HashSet<Int64>>>,s_from:Int64, symbol:String, s_to:HashSet<Int64>){
+        //为指定trans再增加一个转换关系（从s_from,通过输入字母symbol，转换到状态s_to）
+        if (trans.contains(s_from)){
+            if(trans[s_from].contains(symbol)){
+                trans[s_from][symbol].add(all:s_to)
+            }else{
+                trans[s_from].add(symbol, s_to)
+            }
+        }else{
+            let map_sy_to=HashMap<String, HashSet<Int64>>([(symbol,s_to)])
+            trans.add(s_from,map_sy_to)
+        }
+        return trans
     }
 
     public func merge_nfa(start:Int64,accepts:HashSet<Int64>,transitions:HashMap<Int64, HashMap<String, HashSet<Int64>>>){
         //合并另一个NFA到当前NFA中
         for ((s,sy_sets) in transitions) {
             for ((sym,sets) in sy_sets) {
-                this.transitions[s][sym].add(all:sets)
+                //this.transitions[s][sym].add(all:sets)
+                this.transitions=add_transitions(this.transitions,s,sym,sets)
             }
         }
         if (this.start == Int64(-1)) {
             this.start = start
         }
+        //this.start = start
         this.accepts.add(all:accepts)
+    }
+
+    public func print_nfa(){
+        //打印NFA的状态转换表
+        println("NFA Start State: " + this.start.toString())
+        println("NFA Accept States: " + this.accepts.toString())
+        println("NFA Transitions:")
+        for ((s,sy_sets) in this.transitions) {
+            for ((sy,sets) in sy_sets) {
+                for (t in sets){
+                    println("  " + s.toString() + " -- " + sy + " --> " + t.toString())
+                }
+            }
+        }
     }
 
 }
@@ -60,14 +86,18 @@ class RegexToNFA{
     var regex:String="" //原始正则表达式
     var processed_regex:String="" //处理后的正则表达式
     var postfix_expr:String="" //后缀表达式
-    //var nfa:NFA //生成的NFA
+    var nfa:NFA=NFA() //生成的NFA
+    
+    public init(){
+        //默认构造函数
+    }
 
     public init(regex:String){
         //初始化正则表达式
         this.regex = regex
         this.processed_regex = add_concatenation_operator(regex)
         this.postfix_expr = convert_postfix_expr(this.processed_regex)
-        //self.nfa=self.postfix_to_nfa(self.postfix_expr)
+        this.nfa=postfix_to_nfa(this.postfix_expr)
     }
 
     public func add_concatenation_operator(regex:String):String{
@@ -105,7 +135,6 @@ class RegexToNFA{
         var output: ArrayList<String> = ArrayList<String>()
         
         for (token in infix_expr.split("")) {
-            //println("Processing token: " + token)
             if (token=='('){
                 stack.add(token)
             }else if(token==')'){
@@ -148,17 +177,17 @@ class RegexToNFA{
             }
             output.add(op)
         }
-        let postifix_expr = output.toString()
+        let postifix_expr =String.join(output.toArray(), delimiter:"")
         return postifix_expr
     }
 
-    public func make_basic_nfa_fragment(nfa:NFA,char:String){
+    public func make_basic_nfa_fragment(char:String){
         //生成新的基本的nfa片段（子nfa的内容）
         let s=state_counter.next()
         let t=state_counter.next()
-        let trans=HashMap<Int64, HashMap<String, HashSet<Int64>>>()
-        trans[s][char].add(t)
-        return (s,HashSet(t),trans)
+        var trans=HashMap<Int64, HashMap<String, HashSet<Int64>>>()
+        trans=this.nfa.add_transitions(trans,s,char,HashSet([t]))
+        return (s,HashSet([t]),trans)
     }
 
     public func postfix_to_nfa(postfix_expr:String){
@@ -179,38 +208,38 @@ class RegexToNFA{
                 //先复制旧的
                 for((s,sy_sets) in trans_old){
                     for((sy,sets) in sy_sets){
-                        trans[s][sy].add(all:sets)
+                        trans=this.nfa.add_transitions(trans,s,sy,sets)
                     }
                 }
                 // new start -> old start & new accept (空串)
-                trans[s_new][EPS].add(s_old)
-                trans[s_new][EPS].add(t_new)
+                trans=this.nfa.add_transitions(trans,s_new,EPS,HashSet([s_old]))
+                trans=this.nfa.add_transitions(trans,s_new,EPS,HashSet([t_new]))
                 // old accepts -> old start (loop) and -> new accept
                 for (a in ac_old){
-                    trans[a][EPS].add(s_old)
-                    trans[a][EPS].add(t_new)
+                    trans=this.nfa.add_transitions(trans,a,EPS,HashSet([s_old]))
+                    trans=this.nfa.add_transitions(trans,a,EPS,HashSet([t_new]))
                 }
-                stack.add((s_new, HashSet(t_new), trans))
+                stack.add((s_new, HashSet([t_new]), trans))
             }else if(token=="."){
                 //连接运算
                 let (s1,ac1,trans1)= stack[stack.size - 2]
                 let (s2,ac2,trans2)= stack[stack.size - 1]
                 stack.remove(at:stack.size - 1)
                 stack.remove(at:stack.size - 1)
-                let trans=HashMap<Int64, HashMap<String, HashSet<Int64>>>()
+                var trans=HashMap<Int64, HashMap<String, HashSet<Int64>>>()
                 for ((s,sy_sets) in trans1){
                     for((sy,sets) in sy_sets){
-                        trans[s][sy].add(all:sets)
+                        trans=this.nfa.add_transitions(trans,s,sy,sets)
                     }
                 }
                 for ((s,sy_sets) in trans2){
                     for((sy,sets) in sy_sets){
-                        trans[s][sy].add(all:sets)
+                        trans=this.nfa.add_transitions(trans,s,sy,sets)
                     }
                 }
                 // 连接: accepts1 -> ε -> s2
                 for (a in ac1){
-                    trans[a][EPS].add(s2)
+                    trans=this.nfa.add_transitions(trans,a,EPS,HashSet([s2]))
                 }
                 stack.add((s1, ac2, trans))
             }else if(token=="|"){
@@ -224,28 +253,28 @@ class RegexToNFA{
                 let t_new=state_counter.next()
                 for ((s,sy_sets) in trans1){
                     for((sy,sets) in sy_sets){
-                        trans[s][sy].add(all:sets)
+                        trans=this.nfa.add_transitions(trans,s,sy,sets)
                     }
                 }
                 for ((s,sy_sets) in trans2){
                     for((sy,sets) in sy_sets){
-                        trans[s][sy].add(all:sets)
+                        trans=this.nfa.add_transitions(trans,s,sy,sets)
                     }
                 }
                 // new start -> s1 , s2
-                trans[s_new][EPS].add(s1)
-                trans[s_new][EPS].add(s2)
+                trans=this.nfa.add_transitions(trans,s_new,EPS,HashSet([s1]))
+                trans=this.nfa.add_transitions(trans,s_new,EPS,HashSet([s2]))
                 // accepts -> new accept
                 for (a in ac1){
-                    trans[a][EPS].add(t_new)
+                    trans=this.nfa.add_transitions(trans,a,EPS,HashSet([t_new]))
                 }
                 for (a in ac2){
-                    trans[a][EPS].add(t_new)
+                    trans=this.nfa.add_transitions(trans,a,EPS,HashSet([t_new]))
                 }
-                stack.add((s_new, HashSet(t_new), trans) )
+                stack.add((s_new, HashSet([t_new]), trans) )
             }else{
                 //普通字符
-                let frag=make_basic_nfa_fragment(nfa, token)
+                let frag=make_basic_nfa_fragment(token)
                 stack.add(frag)
             }
         }
@@ -261,25 +290,58 @@ class RegexToNFA{
     }
 
     func test(code:Int64){
-        //测试代码
+        //测试函数
         if(code==1){
+            //测试添加连接符函数
             let examples = ["ab", "a(b|c)", "(a|b)*abb", "a*b", "a(b)c"]
             for (example in examples) {
                 let processed = add_concatenation_operator(example)
                 println("Original: " + example + " -> Processed: " + processed)
             }
         }else if(code==2){
+            //测试中缀转后缀函数
             let examples = ["a.b.c", "a|b.c", "(a.b)|c", "a.b*|c"]
             for (example in examples) {
                 let postfix = convert_postfix_expr(example)
                 println("Infix: " + example + " -> Postfix: " + postfix)
             }
+        }else if(code==3){
+            //测试后缀转NFA函数
+            let examples = ["a.b.c", "a|b.c", "(a.b)|c", "a.b*|c"]
+            for (example in examples) {
+                let nfa=postfix_to_nfa(convert_postfix_expr(example))
+                nfa.print_nfa()
+            }
+        }else if(code==4){
+            //测试整体流程
+            let examples = ["a(b|c)*d", "(a|b)*abb", "abc", "a|bc","a(b|c)*d"]
+            for( example in examples){
+                let r2n:RegexToNFA=RegexToNFA(example)
+                r2n.print_convert_process()
+            }
+        }else{
+            println("Invalid test code")
         }
+    }
+    public func print_convert_process(){
+        println("Infix Regex: " + this.regex)
+        println("Processed Regex: " + this.processed_regex)
+        println("Postfix Expression: " + this.postfix_expr)
+        println("Generated NFA:")
+        this.nfa.print_nfa()
     }
 } 
 
 main(){
     let regex:String="a(b|c)*d"
     let regex_to_nfa:RegexToNFA=RegexToNFA(regex)
-    regex_to_nfa.test(2)
+    println("整体测试:")
+    regex_to_nfa.test(4)
+
+    println("\n单元测试:")
+    let examples = ["a(b|c)*d", "(a|b)*abb", "abc", "a|bc","a(b|c)*d"]
+    for( example in examples){
+        let r2n:RegexToNFA=RegexToNFA(example)
+        r2n.print_convert_process()
+    }
 }
