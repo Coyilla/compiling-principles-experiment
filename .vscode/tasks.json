@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cangjieDebugBuild",
+			"cmd": "C:/Windows/System32/cmd.exe",
+			"args": [
+				"/C",
+				"chcp",
+				"65001",
+				"&&",
+				"E:\\ProgramFiles\\cangjie\\cangjie\\bin\\cjc.exe",
+				"-g",
+				"e:\\i-hdu\\goodStudy\\Principles of Compilation\\code\\cf-Re2NFA.cj",
+				"-o",
+				"e:\\i-hdu\\goodStudy\\Principles of Compilation\\code\\cf-Re2NFA.exe"
+			],
+			"label": "cangjieDebug build task - FUvrVo9wQM"
+		}
+	]
+}

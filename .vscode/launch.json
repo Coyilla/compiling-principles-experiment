@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Cangjie (CJNative): cf-Re2NFA.exe",
+            "program": "e:\\i-hdu\\goodStudy\\Principles of Compilation\\code\\cf-Re2NFA.exe",
+            "request": "launch",
+            "type": "cangjieDebug",
+            "externalConsole": false,
+            "env": {},
+            "preLaunchTask": "cangjieDebug build task - FUvrVo9wQM"
+        }
+    ]
+}

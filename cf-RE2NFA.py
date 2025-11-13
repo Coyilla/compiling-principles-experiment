@@ -132,8 +132,8 @@ class RegexToNFAConverter:
                 stack.append((s_new),{t_new},trans)
             elif token=='.':
                 # 连接运算
-                s1,ac1,trans1=stack.pop()
                 s2,ac2,trans2=stack.pop()
+                s1,ac1,trans1=stack.pop()
                 trans=defaultdict(lambda: defaultdict(set))
                 for s,sy_sets in trans1.items():
                     for sy,sets in sy_sets.items():
