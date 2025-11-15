@@ -8,7 +8,7 @@ import std.core
 let EPS:String="ε" //ε转换符号
 
 //全局状态计数器
-class counter{
+public class counter{
     var count:Int64
 
     public init(){
@@ -23,7 +23,7 @@ class counter{
 }
 let state_counter:counter=counter()
 //NFA状态转换表
-class NFA{
+public class NFA{
     var start:Int64 //起始状态
     var accepts: HashSet<Int64> //接受状态集合
     // transitions: state -> symbol -> set(next_states)
@@ -82,7 +82,7 @@ class NFA{
 }
 
 
-class RegexToNFA{
+public class RegexToNFA{
     var regex:String="" //原始正则表达式
     var processed_regex:String="" //处理后的正则表达式
     var postfix_expr:String="" //后缀表达式
