@@ -66,7 +66,7 @@ public class NFA{
         return trans
     }
 
-    public func merge_nfa(start:Int64,accepts:HashSet<Int64>,transitions:HashMap<Int64, HashMap<String, HashSet<Int64>>>,alphabet:HashSet<String>,states:HashSet<Int64>){
+    public func merge_nfa(accepts:HashSet<Int64>,transitions:HashMap<Int64, HashMap<String, HashSet<Int64>>>,alphabet:HashSet<String>,states:HashSet<Int64>){
         //合并另一个NFA到当前NFA中
         for ((s,sy_sets) in transitions) {
             for ((sym,sets) in sy_sets) {
@@ -323,7 +323,7 @@ public class RegexToNFA{
             return nfa
         }
         let (start,accepts,transitions,alphabet,states)= stack[stack.size - 1]
-        nfa.merge_nfa(start, accepts, transitions,alphabet,states)
+        nfa.merge_nfa(accepts, transitions,alphabet,states)
         nfa.start=start
         nfa.accepts=accepts
         nfa.alphabet=alphabet

@@ -9,6 +9,10 @@ main(){
         let dfa:DFA=converter.dfa
         println("DFA状态转换表:")
         dfa.print_dfa()
+        let minimizer:DFAminimizer=DFAminimizer(dfa)
+        let min_dfa:DFA=minimizer.minimized_dfa
+        println("最小化后DFA状态转换表:")
+        min_dfa.print_dfa()
         println("\n")
     }
 }
