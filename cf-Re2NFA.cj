@@ -21,7 +21,7 @@ public class counter{
         return current
     }
 }
-let state_counter:counter=counter()
+// let state_counter:counter=counter()
 //NFA状态转换表
 public class NFA{
     var start:Int64 //起始状态
@@ -32,7 +32,7 @@ public class NFA{
     var states: HashSet<Int64> //状态集合
 
     public init(){
-        this.start = Int64(-1)
+        this.start = Int64(0)
         this.accepts= HashSet<Int64>()
         this.transitions= HashMap<Int64, HashMap<String, HashSet<Int64>>>()
         this.alphabet= HashSet<String>()
@@ -79,9 +79,6 @@ public class NFA{
                 }
             }
         }
-        if (this.start == Int64(-1)) {
-            this.start = start
-        }
         //this.start = start
         this.states.add(all:states)
         this.alphabet.add(all:alphabet)
@@ -112,6 +109,7 @@ public class RegexToNFA{
     var processed_regex:String="" //处理后的正则表达式
     var postfix_expr:String="" //后缀表达式
     var nfa:NFA=NFA() //生成的NFA
+    let state_counter:counter=counter()
     
     public init(){
         //默认构造函数
@@ -208,8 +206,8 @@ public class RegexToNFA{
 
     public func make_basic_nfa_fragment(char:String){
         //生成新的基本的nfa片段（子nfa的内容）
-        let s=state_counter.next()
-        let t=state_counter.next()
+        let s=this.state_counter.next()
+        let t=this.state_counter.next()
         var trans=HashMap<Int64, HashMap<String, HashSet<Int64>>>()
         trans=this.nfa.add_transitions(trans,s,char,HashSet([t]))
         let states=HashSet([s,t])
@@ -228,8 +226,8 @@ public class RegexToNFA{
                 //闭包操作
                 let (s_old, ac_old,trans_old,alphabet_old,states_old)= stack[stack.size - 1]
                 stack.remove(at:stack.size - 1)
-                let s_new=state_counter.next()
-                let t_new=state_counter.next()
+                let s_new=this.state_counter.next()
+                let t_new=this.state_counter.next()
                 var trans=HashMap<Int64, HashMap<String, HashSet<Int64>>>()
                 var alphabet:HashSet<String>=alphabet_old
                 var states:HashSet<Int64>=states_old
@@ -285,8 +283,8 @@ public class RegexToNFA{
                 stack.remove(at:stack.size - 1)
                 stack.remove(at:stack.size - 1)
                 var trans=HashMap<Int64, HashMap<String, HashSet<Int64>>>()
-                let s_new=state_counter.next()
-                let t_new=state_counter.next()
+                let s_new=this.state_counter.next()
+                let t_new=this.state_counter.next()
                 for ((s,sy_sets) in trans1){
                     for((sy,sets) in sy_sets){
                         trans=this.nfa.add_transitions(trans,s,sy,sets)

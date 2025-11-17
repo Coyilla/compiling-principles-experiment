@@ -11,10 +11,12 @@
 				"&&",
 				"E:\\ProgramFiles\\cangjie\\cangjie\\bin\\cjc.exe",
 				"-g",
-				"e:\\i-hdu\\goodStudy\\Principles of Compilation\\code\\cf-Re2NFA.cj",
+				"main.cj", "cf-Re2NFA.cj", "cf-NFA2DFA.cj",
 				"-o",
-				"e:\\i-hdu\\goodStudy\\Principles of Compilation\\code\\cf-Re2NFA.exe"
+				"e:\\i-hdu\\goodStudy\\Principles of Compilation\\code\\main.exe",   
 			],
+			"group": "build",
+			"problemMatcher": [],
 			"label": "cangjieDebug build task - FUvrVo9wQM"
 		}
 	]
