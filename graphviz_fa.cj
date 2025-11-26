@@ -1,3 +1,5 @@
+// graphviz_fa.cj
+//功能：将NFA或DFA可视化为PNG格式的图像文件
 import std.process.*
 import std.core.*
 import std.collection.*
@@ -78,13 +80,12 @@ public class Visualizer {
     // 调用系统 dot 生成 PNG，返回文件路径 
     private func render(dot: String, name: String): String {
         let pngPath = "${this.outDir}/${name}.png"
-        // let args: Array<String> = ["-Tpng", "-o", pngPath]
-        // // 1. 创建Process实例
-        // let proc = Process()
-        // // 2. 分别设置可执行命令和参数
-        // proc.executableURL = URL(fileURLWithPath: "dot") // 或 "dot.exe"
-        // proc.arguments = ["-Tpng", "-o", pngPath]
+        let args: Array<String> = ["-Tpng", "-o", pngPath]
+        let dotCommand = "dot.exe"  // 或者 "C:\\Program Files\\Graphviz\\bin\\dot.exe"
+    
+        // let proc= Process(dotCommand, ["-Tpng", "-o", pngPath])
         // proc.redirectStdin(ProcessRedirect.PIPE)
+        
         // try {
         //     proc.start()
         //     proc.stdin.write(dot.bytes)
@@ -100,18 +101,5 @@ public class Visualizer {
         return pngPath
     }
 
-    private func generate_dot_file(dot: String, name: String): String {
-        let dotPath = "${this.outDir}/${name}.dot"
-        let pngPath = "${this.outDir}/${name}.png"
-    
-        // 1. 保存DOT文件
-        try {
-            let file = File.create(dotPath)
-            file.write(dot.toArray())
-        } catch (error: Exception){
-            println("Failed to create DOT file: ${error}")
-            return ""
-        }
-        return dotPath
-    }
+
 }

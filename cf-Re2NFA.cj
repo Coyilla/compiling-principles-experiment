@@ -144,7 +144,7 @@ public class RegexToNFA{
     }
 
     public func convert_postfix_expr(infix_expr: String): String {
-        // 使用仓颉的集合类型实现Shunting Yard算法
+        // 使用仓颉的集合类型实现Shunting Yard算法，转为后缀表达式
         let prec: HashMap<String, Int64> = HashMap<String, Int64>()
         prec.add("*", 3)
         prec.add(".", 2) 
