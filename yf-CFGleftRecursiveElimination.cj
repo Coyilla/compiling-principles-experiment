@@ -40,6 +40,19 @@ public enum Symbol<: Hashable & Equatable<Symbol>{
         }
         println()
     }
+    func is_NON_TERMINAL():Bool{
+        match(this){
+            case NON_TERMINAL(s:String) => true
+            case _   =>false
+        }
+    }
+    func clone():Symbol{
+        match(this){
+            case TERMINAL(s:String)    =>Symbol.TERMINAL(s)
+            case NON_TERMINAL(s:String) => Symbol.NON_TERMINAL(s)
+            case OPERATOR(s:String)   =>Symbol.OPERATOR(s)
+        }
+    }
     
 }
 
@@ -60,11 +73,9 @@ public struct  Sentence {
     }
     public init(sen:ArrayList<Symbol>){
         //直接给定
+        this.sentence=sen.clone()
         this.str=String()
-        for (sym in sen){
-            this.str=this.str+sym.get_value()+" "
-        }
-        this.sentence=sen
+        this.str=sen_join_str(sen)
     }
 
     //将纯字符串的句子分割为ArrayList<Symbol>，默认符号+' 是连续在一起的符号，即A'为一个整体，其他以单个符号为一个整体，即AB视为A和B.
@@ -75,24 +86,7 @@ public struct  Sentence {
         for (s in string.split("")){
             if(s>="A" && s<="Z"){
                 //大写字符，默认为非终结符号
-                let i=string.indexOf(s).getOrThrow()
-                let quoteByte: UInt8 = 0x27   // ASCII 单引号 '
-                let curlyQuoteByte: UInt8 = 0x92  // Windows 经常出现的右单引号（’）
-                if(i+1<=string.size-1){
-                    let b = string[i + 1]
-                    if((b == quoteByte || b == curlyQuoteByte)){
-                        if(b==quoteByte){
-                            new_sentence.add(Symbol.NON_TERMINAL(s+"'"))
-                        }else{
-                            new_sentence.add(Symbol.NON_TERMINAL(s+"’"))
-                        }
-                    }else{
-                    new_sentence.add(Symbol.NON_TERMINAL(s))
-                    }
-                }else{
-                    new_sentence.add(Symbol.NON_TERMINAL(s))
-                }
-
+                new_sentence.add(Symbol.NON_TERMINAL(s))
             }else if([",","|","+","*",".","(",")","+","-","/"].contains(s)){
                 //运算操作符
                 new_sentence.add(Symbol.OPERATOR(s))
@@ -100,11 +94,11 @@ public struct  Sentence {
             }else if(s==" "){
                 //空格，跳过
                 continue
-
             }else if(s=="'"||s=="’"){
-                //',跳过
-                continue
-
+                //',找到前面的一个非终结符号，更新加入'
+                var last_non_terminal=new_sentence.get(new_sentence.size-1).getOrThrow().get_value()
+                new_sentence.remove(at:new_sentence.size-1)
+                new_sentence.add(Symbol.NON_TERMINAL(last_non_terminal+s))
             }else{
                 //小写字符和数字，默认为终结符号
                 new_sentence.add(Symbol.TERMINAL(s))
@@ -119,6 +113,22 @@ public struct  Sentence {
             print(s.get_value())
         }
         println()
+    }
+    func sen_join_str(sen:ArrayList<Symbol>){
+        var s=String()
+        for(symbol in sen){
+            s=s+symbol.get_value()+" "
+        }
+        return s
+    }
+    func clone(){
+        var news=Sentence()
+        news.sentence=ArrayList<Symbol>()
+        for(s in this.sentence){
+            news.sentence.add(s.clone())
+        }
+        news.str=this.str.clone()
+        return news
     }
 
 }
@@ -194,6 +204,20 @@ public struct Production{
         }
         println(this.left.toString()+" -> "+String.join(rarray.toArray(),delimiter: " | "))
     }
+    func clone(){
+        var new_production=Production()
+        new_production.right=this.right.clone()
+        new_production.left=this.left.clone()
+        return new_production 
+    }
+    func right_contains(s:Sentence){
+        for (pro_s in this.right){
+            if(s.sentence==pro_s.sentence){
+                return true
+            }
+        }
+        return false
+    }
 }
 
 // 文法
@@ -262,15 +286,31 @@ public struct Grammar  {
         }
         println("开始符号: " + this.start_symbol)
     }
+
+    func get_production(l:String):Production{
+        for(p in this.productions){
+            if(p.left==l){
+                return p
+            }
+        }
+        return Production()
+    }
+    func clone(){
+        var new_grammar=Grammar()
+        new_grammar.productions=this.productions.clone()
+        new_grammar.non_terminals=this.non_terminals.clone()
+        new_grammar.terminals=this.terminals.clone()
+        new_grammar.start_symbol=this.start_symbol.clone()
+        return new_grammar
+    }
 }
 
 // 测试函数
 func test_grammar(){
     let s=
     '''
-E→ET+ | ET- | T
-T→TF* | TF/ | F
-F→(E) | i
+ S → abcS’ | bcS’ | cS’
+ S’ → abcS’ | ε
 '''
    let g:Grammar=Grammar(s)
    g.print_grammar()
@@ -295,11 +335,132 @@ public class CFGleftRecursiveElimination{
         this.cfg_str=c
         this.cfg=Grammar(c)
         this.cfg_elimate_left_recursion=Grammar()
-        this.cfg_elimate_left_recursion=elimate_left_recursion(this.cfg);
-    }
-    public func elimate_left_recursion(cfg:Grammar):Grammar{
-        var new_cfg=Grammar()
+        this.cfg_elimate_left_recursion=elimate_left_recursion(Grammar(c))
 
+    }
+    func get_index(s:String,arr:Array<String>):Int64{
+        var i=0
+        for(a in arr){
+            if(a==s){
+                return i
+            }
+            i=i+1
+        }
+        //没找到
+        return -1
+    }
+    func compare_index(s1:String,s2:String,arr:Array<String>):Int64{
+        let i1=get_index(s1,arr)
+        let i2=get_index(s2,arr)
+        if(i1>=0 && i2>=0){
+            if(i1<i2){
+                return -1
+            }else if(i1>i2){
+                return 1
+            }else{
+                return 0
+            }
+        }else{
+            return 2 //不存在
+        }
+    }
+    
+    public func elimate_left_recursion(cfg:Grammar):Grammar{
+        // step1 消除间接左递归
+        var new_cfg=cfg.clone()
+        //非终结符号排序（以出现顺序）
+        let order=new_cfg.non_terminals.toArray()
+        var changed = true
+        // 需要多次迭代直到没有变化
+        while (changed) {
+            changed = false
+            for (i in 0..(new_cfg.productions.size)){
+                let production_i=new_cfg.productions[i].clone() //当前判断的产生式（原始版）
+                let current_nt = production_i.left //当前非终结符
+
+                for(p_i in 0..production_i.right.size){
+                    let candidate = production_i.right[p_i] // 正在处理的式子
+                    if(candidate.sentence.size > 0 && candidate.sentence[0].is_NON_TERMINAL()){
+                        let first_nt = candidate.sentence[0].get_value() // 正在处理的式子的首个字符
+                        // 检查是否是需要替换的非终结符（排在当前非终结符前面）
+                        let current_index = order.indexOf(current_nt).getOrThrow()//当前非终结符的索引
+                        let first_index = order.indexOf(first_nt).getOrThrow()//正在处理的式子的首个字符的索引
+                        if (first_index>= 0 && first_index < current_index) {
+                            // 存在需要替换的间接左递归
+                            let production_j = new_cfg.get_production(first_nt) //用于替换的产生式
+                            for (sen_j in production_j.right) {
+                                let new_sen = candidate.sentence.clone()
+                                new_sen.remove(at: 0)  // 移除开头的first_nt
+                                new_sen.add(at: 0, all: sen_j.sentence)  // 插入替换的产生式右部
+                            
+                                // 检查是否产生新的产生式
+                                let new_sentence = Sentence(new_sen)
+                                if (!new_cfg.productions[i].right_contains(new_sentence)) {
+                                    new_cfg.productions[i].right.add(new_sentence)
+                                    changed = true
+                                }
+                            }
+                            // 移除原始产生式
+                            new_cfg.productions[i].right.remove(at:p_i)
+                        }
+                    
+                    }
+                }
+
+            }
+        }
+        //step2 消除直接左递归
+        new_cfg=remove_direct_left_recursion(new_cfg)
+        
+        return new_cfg
+    }
+    func remove_direct_left_recursion(cfg:Grammar):Grammar{
+        var new_cfg=cfg.clone()
+        for (i in 0..(new_cfg.productions.size)){
+            let production_i=new_cfg.productions[i].clone() //当前判断的产生式（原始版）
+            let current_nt = production_i.left //当前非终结符
+
+            var dlr_set=ArrayList<Sentence>()//直接左递归的式子的集合
+            var non_dlr_set=ArrayList<Sentence>()//非直接左递归式子集合
+
+            for(p_i in 0..production_i.right.size){
+                var candidate = production_i.right[p_i] // 正在处理的式子
+                if(candidate.sentence.size > 0){
+                    let first_nt = candidate.sentence[0].get_value() // 正在处理的式子的首个字符
+                    if(current_nt==first_nt){
+                        // 为直接左递归
+                        dlr_set.add(candidate)
+                    }else{
+                        // 不为直接左递归
+                        non_dlr_set.add(candidate)
+                    }   
+                }
+            }
+            //处理直接左递归
+            if(dlr_set.size>0){
+                let new_current_nt=current_nt+"'"
+                for (j in 0..non_dlr_set.size) {
+                    let old = non_dlr_set[j]
+                    non_dlr_set[j] = Sentence(old.str + new_current_nt)
+                }
+                var new_production1=Production(current_nt,non_dlr_set)
+                new_cfg.productions[i]=new_production1
+                new_cfg.non_terminals.add(new_current_nt)
+
+                var new_production2=Production()//新的产生式
+                new_production2.left=new_current_nt
+                for (j in 0..dlr_set.size) {
+                    let old = dlr_set[j]
+                    old.sentence.remove(at:0)
+                    old.sentence.add(Symbol.NON_TERMINAL(new_current_nt))
+                    dlr_set[j] = Sentence(old.sentence)
+                }
+                dlr_set.add(Sentence("ε"))
+                new_production2.right=dlr_set
+                new_cfg.productions.add(new_production2)//更新new_cfg
+            }    
+
+        }
         return new_cfg
     }
     

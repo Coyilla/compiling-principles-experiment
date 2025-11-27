@@ -16,7 +16,21 @@ main(){
     //     min_dfa.print_dfa()
     //     println("\n")
     // }
-    let result = test_grammar()
+
+    println("实验3.1 上下⽂⽆关⽂法左递归消去算法的实现")
+    let s='''
+S → Ac | c
+A → Bb | b
+B → Sa| a
+'''
+    let c:CFGleftRecursiveElimination=CFGleftRecursiveElimination(s)
+    
+    // c.cfg.print_grammar()
+    // c.cfg_elimate_left_recursion.print_grammar()
+    println("原始文法：")
+    c.cfg.print_grammar_merge()
+    println("左递归消去的文法")
+    c.cfg_elimate_left_recursion.print_grammar_merge()
     
     
     // 语法分析
