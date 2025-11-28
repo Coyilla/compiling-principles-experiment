@@ -32,6 +32,13 @@ B → Sa| a
     println("左递归消去的文法")
     c.cfg_elimate_left_recursion.print_grammar_merge()
     
-    
-    // 语法分析
+    println("任务3.2: 文法左公共因子提取方法及实现")
+    let example_LeftCommonFactor='''
+S -> apple | apply | application | ball | bat | bath | Xb
+X -> ab | ac | ad'''
+    let lcfe=LeftCommonFactorExtractor(example_LeftCommonFactor)
+    println("原始文法：")
+    lcfe.cfg.print_grammar_merge()
+    println("消除左公因子后的文法：")
+    lcfe.cfg_extract_left_common_factors.print_grammar_merge()
 }

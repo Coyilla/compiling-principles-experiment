@@ -1,7 +1,7 @@
 // yf-CFGleftRecursiveElimination.cj
 //输入：⼀个上下文无关文法，包括非终结符、终结符和产生式。
 //输出: 消去左递归后的文法
-import std.collection.{ArrayList, HashMap, HashSet}
+import std.collection.{ArrayList, HashSet}
 import std.core
 
 // 文法符号类型
@@ -131,6 +131,26 @@ public struct  Sentence {
         return news
     }
 
+    func start_with(prefix:ArrayList<Symbol>):Bool{
+        if(prefix.size>this.sentence.size){
+            return false //前缀比原串还长
+        }
+        for (i in 0..prefix.size){
+            if(this.sentence[i]!=prefix[i]){
+                return false
+            }
+        }
+        return true
+    }
+
+    public operator func ==(rhs: Sentence):Bool{
+        if(this.sentence==rhs.sentence){
+            return true
+        }else{
+            return false
+        }
+    }
+
 }
 
 // 产生式
@@ -213,6 +233,14 @@ public struct Production{
     func right_contains(s:Sentence){
         for (pro_s in this.right){
             if(s.sentence==pro_s.sentence){
+                return true
+            }
+        }
+        return false
+    }
+    public operator func ==(rhs:Production):Bool{
+        if(this.left==rhs.left){
+            if(this.right.size==rhs.right.size){
                 return true
             }
         }

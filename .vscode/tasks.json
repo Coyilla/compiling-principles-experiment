@@ -11,7 +11,7 @@
 				"&&",
 				"E:\\ProgramFiles\\cangjie\\cangjie\\bin\\cjc.exe",
 				"-g",
-				"main.cj", "cf-Re2NFA.cj", "cf-NFA2DFA.cj","cf-DFAmizimizer.cj","graphviz_fa.cj","yf-CFGleftRecursiveElimination.cj",
+				"main.cj", "cf-Re2NFA.cj", "cf-NFA2DFA.cj","cf-DFAmizimizer.cj","graphviz_fa.cj","yf-CFGleftRecursiveElimination.cj","yf-leftFactorsExtraction.cj",
 				"-o",
 				"e:\\i-hdu\\goodStudy\\Principles of Compilation\\code\\main.exe",   
 			],
