@@ -41,4 +41,16 @@ X -> ab | ac | ad'''
     lcfe.cfg.print_grammar_merge()
     println("消除左公因子后的文法：")
     lcfe.cfg_extract_left_common_factors.print_grammar_merge()
+
+    println("3.3")
+    let example_faf='''
+S→MH | a
+H→LSo |ε
+K→dML | ε
+L→eHf
+M→K | bLM
+'''
+    let faf=FIRSTandFOLLOW(Grammar(example_faf))
+    faf.print_first()
+    faf.print_follow()
 }

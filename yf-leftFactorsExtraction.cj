@@ -1,4 +1,7 @@
 // yf-leftFactorsExtraction.cj
+//对每个⾮终结符的候选式，识别最⻓的公共前缀。
+//构建字典树（Trie），辅助提取最⻓公共前缀，将公共前缀提取为新⾮终结符的候选式。
+//输出去除左公共因⼦的等价⽂法。
 import std.collection.{ArrayList, HashMap, HashSet}
 import std.core
 

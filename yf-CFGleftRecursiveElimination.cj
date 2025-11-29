@@ -6,13 +6,12 @@ import std.core
 
 // 文法符号类型
 public enum Symbol<: Hashable & Equatable<Symbol>{
-    |TERMINAL(String)|NON_TERMINAL(String)|OPERATOR(String)
-    //文法符号有三种类型：终结符号，非终结符号，运算符
+    |TERMINAL(String)|NON_TERMINAL(String)
+    //文法符号有两种类型：终结符号，非终结符号
     func get_value():String{
         match(this){
             case TERMINAL(s:String)    => s
             case NON_TERMINAL(s:String) => s
-            case OPERATOR(s:String)   =>s
         }
     }
     
@@ -20,7 +19,6 @@ public enum Symbol<: Hashable & Equatable<Symbol>{
         match (this) {
         case TERMINAL(s:String)    => 1 ^ s.hashCode()
         case NON_TERMINAL(s:String) => 2 ^ s.hashCode()
-        case OPERATOR(s:String)   => 3 ^ s.hashCode()
         }
     }
 
@@ -28,7 +26,6 @@ public enum Symbol<: Hashable & Equatable<Symbol>{
         match ((this,rhs)) {
         case (TERMINAL(a), TERMINAL(b))         => a == b
         case (NON_TERMINAL(a), NON_TERMINAL(b)) => a == b
-        case (OPERATOR(a),OPERATOR(b))          => a == b
         case _                                  => false        // 交叉情况：TERMINAL vs NON_TERMINAL
         }
     }
@@ -36,7 +33,6 @@ public enum Symbol<: Hashable & Equatable<Symbol>{
         match(this){
             case TERMINAL(s:String)    => print("TERMINAL:${s}")
             case NON_TERMINAL(s:String) => print("NON_TERMINAL:${s}")
-            case OPERATOR(s:String)   =>print("OPERATOR:${s}")
         }
         println()
     }
@@ -46,11 +42,17 @@ public enum Symbol<: Hashable & Equatable<Symbol>{
             case _   =>false
         }
     }
+
+    func is_TERMINAL():Bool{
+        match(this){
+            case TERMINAL(s:String) => true
+            case _   =>false
+        }
+    }
     func clone():Symbol{
         match(this){
             case TERMINAL(s:String)    =>Symbol.TERMINAL(s)
             case NON_TERMINAL(s:String) => Symbol.NON_TERMINAL(s)
-            case OPERATOR(s:String)   =>Symbol.OPERATOR(s)
         }
     }
     
@@ -87,10 +89,6 @@ public struct  Sentence {
             if(s>="A" && s<="Z"){
                 //大写字符，默认为非终结符号
                 new_sentence.add(Symbol.NON_TERMINAL(s))
-            }else if([",","|","+","*",".","(",")","+","-","/"].contains(s)){
-                //运算操作符
-                new_sentence.add(Symbol.OPERATOR(s))
-                
             }else if(s==" "){
                 //空格，跳过
                 continue
@@ -100,7 +98,7 @@ public struct  Sentence {
                 new_sentence.remove(at:new_sentence.size-1)
                 new_sentence.add(Symbol.NON_TERMINAL(last_non_terminal+s))
             }else{
-                //小写字符和数字，默认为终结符号
+                //其余默认为终结符号
                 new_sentence.add(Symbol.TERMINAL(s))
             }
             
@@ -289,7 +287,6 @@ public struct Grammar  {
                     match(symbol){
                         case TERMINAL(s:String)    => this.terminals.add(s)
                         case NON_TERMINAL(s:String) => this.non_terminals.add(s)
-                        case _  => continue
                     }
                 }
 
@@ -330,6 +327,15 @@ public struct Grammar  {
         new_grammar.terminals=this.terminals.clone()
         new_grammar.start_symbol=this.start_symbol.clone()
         return new_grammar
+    }
+
+    func find_sentences(l:String):ArrayList<Sentence>{
+        for(production in this.productions){
+            if(production.left==l){
+                return production.right
+            }
+        }
+        return ArrayList<Sentence>()
     }
 }
 
@@ -486,6 +492,7 @@ public class CFGleftRecursiveElimination{
                 dlr_set.add(Sentence("ε"))
                 new_production2.right=dlr_set
                 new_cfg.productions.add(new_production2)//更新new_cfg
+                new_cfg.terminals.add("ε")
             }    
 
         }
