@@ -337,6 +337,25 @@ public struct Grammar  {
         }
         return ArrayList<Sentence>()
     }
+
+    func toString(){
+        var s=String()
+        var is_first=true
+        for(production in this.productions){
+            if(is_first){
+                is_first=false
+            }else{
+                s=s+"\n"
+            }
+            var rarray=ArrayList<String>()
+            for(r in production.right){
+                rarray.add(r.str.trimAscii())
+            }
+            s=s+production.left.toString()+" -> "+String.join(rarray.toArray(),delimiter: " | ")
+        }
+        
+        return s
+    }
 }
 
 // 测试函数
@@ -370,6 +389,14 @@ public class CFGleftRecursiveElimination{
         this.cfg=Grammar(c)
         this.cfg_elimate_left_recursion=Grammar()
         this.cfg_elimate_left_recursion=elimate_left_recursion(Grammar(c))
+
+    }
+
+    public init(g:Grammar){
+        this.cfg_str=g.toString()
+        this.cfg=g
+        this.cfg_elimate_left_recursion=Grammar()
+        this.cfg_elimate_left_recursion=elimate_left_recursion(g)
 
     }
     func get_index(s:String,arr:Array<String>):Int64{

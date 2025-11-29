@@ -138,6 +138,13 @@ public class LeftCommonFactorExtractor{
         this.cfg_extract_left_common_factors=extract_common_factors(Grammar(c))
 
     }
+    public init(g:Grammar){
+        this.cfg_str=g.toString()
+        this.cfg=g
+        this.cfg_extract_left_common_factors=Grammar()
+        this.cfg_extract_left_common_factors=extract_common_factors(g)
+
+    }
 
     //提取文法左公共因子
     public func extract_common_factors(grammar:Grammar):Grammar{

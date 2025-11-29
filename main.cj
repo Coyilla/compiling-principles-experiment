@@ -17,6 +17,7 @@ main(){
     //     println("\n")
     // }
 
+    // 语法分析
     println("实验3.1 上下⽂⽆关⽂法左递归消去算法的实现")
     let s='''
 S → Ac | c
@@ -32,7 +33,7 @@ B → Sa| a
     println("左递归消去的文法")
     c.cfg_elimate_left_recursion.print_grammar_merge()
     
-    println("任务3.2: 文法左公共因子提取方法及实现")
+    println("\n任务3.2 文法左公共因子提取方法及实现")
     let example_LeftCommonFactor='''
 S -> apple | apply | application | ball | bat | bath | Xb
 X -> ab | ac | ad'''
@@ -42,7 +43,7 @@ X -> ab | ac | ad'''
     println("消除左公因子后的文法：")
     lcfe.cfg_extract_left_common_factors.print_grammar_merge()
 
-    println("3.3")
+    println("\n3.3 上下⽂⽆关⽂法FIRST集和FOLLOW集求解及实现")
     let example_faf='''
 S→MH | a
 H→LSo |ε
@@ -51,6 +52,17 @@ L→eHf
 M→K | bLM
 '''
     let faf=FIRSTandFOLLOW(Grammar(example_faf))
+    faf.cfg.print_grammar()
     faf.print_first()
     faf.print_follow()
+
+    println("\n3.4 LL(1)文法判定与预测分析器设计及实现")
+    let example_ll1='''
+S → AB
+A → aA | ε
+B → b
+'''
+    let ll1=LL1(example_ll1)
+    ll1.print()
+    println(ll1.predictive_parser("aaaab"))
 }
