@@ -192,6 +192,7 @@ public class LL1{
         }
     }
 
+    //对指定句子的预测分析与过程
     func predictive_parser(input_string:String){
         println("\n句子${input_string}的预测分析")
         let grammar=this.cfg
@@ -209,7 +210,9 @@ public class LL1{
             var match_symbol=""
 
             if(top.is_TERMINAL()){
+                //若栈顶是终结符号
                 if(top.get_value()==current_symbol){
+                    //若匹配
                     is_match=true
                     match_symbol=current_symbol
                     input_buffer.remove(at:0)
@@ -217,12 +220,15 @@ public class LL1{
                     return "Syntax Error"
                 }
             }else if(top.is_NON_TERMINAL()){
+                //若栈顶是非终结符号
+                //查预测表
                 if(this.prediction_table.contains(top.get_value())){
                     if(this.prediction_table[top.get_value()].contains(current_symbol)){
                         production =this.prediction_table[top.get_value()][current_symbol]
                         if(production.right.size!=0){
                             //倒叙访问
                             for(i in 0..production.right[0].sentence.size){
+                                //非空则入栈
                                 if(production.right[0].sentence[production.right[0].sentence.size-1-i].get_value()=="ε"){
                                     continue
                                 }

@@ -477,6 +477,7 @@ public class CFGleftRecursiveElimination{
     }
     func remove_direct_left_recursion(cfg:Grammar):Grammar{
         var new_cfg=cfg.clone()
+        //遍历每个产生式
         for (i in 0..(new_cfg.productions.size)){
             let production_i=new_cfg.productions[i].clone() //当前判断的产生式（原始版）
             let current_nt = production_i.left //当前非终结符
@@ -484,6 +485,7 @@ public class CFGleftRecursiveElimination{
             var dlr_set=ArrayList<Sentence>()//直接左递归的式子的集合
             var non_dlr_set=ArrayList<Sentence>()//非直接左递归式子集合
 
+            //添加直接左递归的子式至dlr_set,非直接左递归式的子式至non_dlr_set
             for(p_i in 0..production_i.right.size){
                 var candidate = production_i.right[p_i] // 正在处理的式子
                 if(candidate.sentence.size > 0){
